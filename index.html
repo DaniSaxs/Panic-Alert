@@ -49,7 +49,7 @@
                             <th scope="col">Edad</th>
                             <th scope="col">Enfermedad(es)</th>
                             <th scope="col">Grupo Sanguíneo</th>
-                            <th scope="col">Teléfono</th>
+                            <th scope="col">Número de Contacto</th>
                         </tr>
                     </thead>
                     <tbody id="modalTable">
@@ -115,6 +115,7 @@
     var tbodyMain = document.getElementById("tbodyMain");
     var modalTable = document.getElementById("modalTable");
     var data = false;
+    var mapFlag = true;
 
     function addItemToTable(user, status)
     {
@@ -219,11 +220,14 @@
 
             if (mainTableBody[index].children[2].innerHTML == "1") {
                 mainTableBody[index].classList.add("bg-danger");
-                infoContainer.classList.remove("d-none");
-                noAlertContainer.classList.add("d-none");
-                getFullReferenceData(mainTableBody[index].children[1].innerHTML);
-                loadMap();
-                notie.alert({ type: 'error', text: `<i class="fas fa-exclamation-triangle"></i> ${mainTableBody[index].children[1].innerHTML} está en peligro!` });
+                if (mapFlag) {
+                    infoContainer.classList.remove("d-none");
+                    noAlertContainer.classList.add("d-none");
+                    getFullReferenceData(mainTableBody[index].children[1].innerHTML);
+                    notie.alert({ type: 'error', text: `<i class="fas fa-exclamation-triangle"></i> ${mainTableBody[index].children[1].innerHTML} está en peligro!` });
+                    loadMap();
+                    mapFlag = false;
+                }
                 // $('#exampleModal').modal('show');
             }
         }
@@ -341,6 +345,26 @@
             radius: 300
         }).addTo(map);
     }
+
+    
+    function getLocationw() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPositionw);
+        } else { 
+            x.innerHTML = "Something Is Wrong";
+        }
+    }
+
+    function showPositionw(position) {
+        
+        lat = position.coords.latitude;
+        if(lat != null){
+            document.write('<center><div class="alert alert-info" role="alert"> Please Turn On Your GPS </div></center>')
+        } 
+    
+    }
+
+    getLocationw();
 
     window.onload = getAllDataOnce(), funcionInit();
     
