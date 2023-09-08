@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<meta name="Description" content="Enter your description here"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="stylesheet" type="text/css" href="https://unpkg.com/notie/dist/notie.min.css">
+<style>
+    #map{
+        height: 200px;
+    }
+</style>
+<title>Panic Alert</title>
+</head>
+<body>
+
+    <h1 class="text-center display-4 my-4 text-danger"><i class="fas fa-exclamation-triangle"></i> Panic Alert</h1>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="container">
+                <h4 class="text-center my-4 text-primary"><i class="fas fa-clipboard-list"></i> Registered Users</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr class="text-center">
+                            <th scope="col">#</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Status</th>
+                            <!-- <th scope="col">Option</th> -->
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyMain">
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <h4 class="text-center my-4 text-warning"><i class="fas fa-exclamation-triangle"></i> Alert Users</h4>
+            <div class="container d-none" id="infoContainer">
+                <table class="table table-striped">
+                    <thead>
+                        <tr class="text-center">
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Edad</th>
+                            <th scope="col">Enfermedad(es)</th>
+                            <th scope="col">Grupo Sanguíneo</th>
+                            <th scope="col">Teléfono</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalTable">
+                       
+                    </tbody>
+                </table>
+
+                <div class="container">
+                    <h2 class="mt-4 display-4 text-center">Coordenadas</h2>
+                    <div id="map"></div>
+                </div>
+            </div>
+
+            <div class="container h-100" id="noAlertContainer">
+                <div class="d-flex justify-content-center align-items-center" style="width: 100%; height: 100%; border-radius: 50px; border: 5px solid var(--danger); border-style: dashed !important;">
+                    <h1 class="display-4 text-danger text-center">No hay alertas por el momento</h1>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <!-- <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Datos de Emergencia</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-body">
+                <div class="container">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr class="text-center">
+                                <th scope="col">Nombre</th>
+                                <th scope="col">Edad</th>
+                                <th scope="col">Enfermedad(es)</th>
+                                <th scope="col">Grupo Sanguíneo</th>
+                                <th scope="col">Teléfono</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalTable">
+                           
+                        </tbody>
+                    </table>
+
+                    <div class="container">
+                        <h2 class="mt-4 display-4 text-center">Coordenadas</h2>
+                        <p class="mt-4 text-center" id="coordinates"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div> -->
+
+<script type="module">
+
+    var id = 0;
+    var tbodyMain = document.getElementById("tbodyMain");
+    var modalTable = document.getElementById("modalTable");
+    var data = false;
+
+    function addItemToTable(user, status)
+    {
+        id++;
+
+        let trow = document.createElement("tr");
+        trow.id = `user${id}`;
+        trow.classList.add("text-center");
+
+        let tdNumber = document.createElement("td");
+        let tdUser = document.createElement("td");
+        let tdStatus = document.createElement("td");
+        tdStatus.id = "status";
+        // let tdOption = document.createElement("td");
+
+        tdNumber.innerHTML = id;
+        tdUser.innerHTML = user;
+        tdStatus.innerHTML = status;
+        // tdOption.innerHTML = `<button type="button" class="btn btn-info btn-block" data-toggle="modal" data-target="#exampleModal"><i class="fa fa-eye"></i></button>`;
+
+        trow.appendChild(tdNumber);
+        trow.appendChild(tdUser);
+        trow.appendChild(tdStatus);
+        // trow.appendChild(tdOption);
+
+        tbodyMain.appendChild(trow);
+    }
+
+    function addAllItemsToTable(EmergencyUser)
+    {
+        id = 0;
+        tbodyMain.innerHTML = "";
+        EmergencyUser.forEach(element => {
+            addItemToTable(element.user, element.status);
+        });
+    }
+
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+        apiKey: "AIzaSyCyXb1cdSFof6_9t7aufjssaRdsqqDW9LI",
+        authDomain: "emergency-button-171a2.firebaseapp.com",
+        databaseURL: "https://emergency-button-171a2-default-rtdb.firebaseio.com",
+        projectId: "emergency-button-171a2",
+        storageBucket: "emergency-button-171a2.appspot.com",
+        messagingSenderId: "97430311675",
+        appId: "1:97430311675:web:ad22d2317549d117cc965e",
+        measurementId: "G-5YELF547DV"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+
+    import{ getDatabase, ref, child, onValue, get} from "https://www.gstatic.com/firebasejs/10.3.1/firebase-database.js";
+
+    const db = getDatabase();
+
+    // Get All Data
+
+    async function getAllDataOnce()
+    {
+        const dbRef = ref(getDatabase());
+
+        await get(child(dbRef, 'EmergencyButton')).then((snapshot) => {
+
+            if (snapshot.exists()) {
+
+                var emergencyUsers = [];
+                
+                snapshot.forEach(childSnapshot => {
+                    emergencyUsers.push(childSnapshot.val());
+                });
+
+                addAllItemsToTable(emergencyUsers);
+
+                emergencyStatus();
+
+            } else {
+                console.log("No data available");
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+
+        getAllDataOnce();
+    }
+
+    function emergencyStatus()
+    {
+        var mainTableBody = document.getElementById("tbodyMain").children;
+        var infoContainer = document.getElementById("infoContainer");
+        var noAlertContainer = document.getElementById("noAlertContainer");
+
+        for (let index = 0; index < mainTableBody.length; index++) {
+
+            if (mainTableBody[index].children[2].innerHTML == "1") {
+                mainTableBody[index].classList.add("bg-danger");
+                infoContainer.classList.remove("d-none");
+                noAlertContainer.classList.add("d-none");
+                getFullReferenceData(mainTableBody[index].children[1].innerHTML);
+                loadMap();
+                notie.alert({ type: 'error', text: `<i class="fas fa-exclamation-triangle"></i> ${mainTableBody[index].children[1].innerHTML} está en peligro!` });
+                // $('#exampleModal').modal('show');
+            }
+        }
+    }
+
+
+    // ----------------------------------Emergency Users---------------------------------
+
+    function addItemToModal(name, age, disease, bloodType, phone)
+    {
+        let trow = document.createElement("tr");
+        trow.classList.add("text-center");
+
+        let tdName = document.createElement("td");
+        let tdAge = document.createElement("td");
+        let tdDisease = document.createElement("td");
+        let tdBloodType = document.createElement("td");
+        let tdPhone = document.createElement("td");
+
+        tdName.innerHTML = name;
+        tdAge.innerHTML = age;
+        tdDisease.innerHTML = disease;
+        tdBloodType.innerHTML = bloodType;
+        tdPhone.innerHTML = phone;
+
+        trow.appendChild(tdName);
+        trow.appendChild(tdAge);
+        trow.appendChild(tdDisease);
+        trow.appendChild(tdBloodType);
+        trow.appendChild(tdPhone);
+
+        modalTable.appendChild(trow);
+    }
+
+    function addAllItemsToModal(EmergencyUser)
+    {
+        modalTable.innerHTML = "";
+        EmergencyUser.forEach(element => {
+            addItemToModal(`${element.firstName} ${element.lastName}`, element.age, element.disease, element.bloodType, element.phoneNumber);
+        });
+    }
+
+    async function getFullReferenceData(user)
+    {
+        const dbRef = ref(getDatabase());
+
+        await get(child(dbRef, 'EmergencyUsers')).then((snapshot) => {
+
+            if (snapshot.exists()) {
+
+                var emergencyUsers = [];
+
+                snapshot.forEach(childSnapshot => {
+                    if (childSnapshot.val().user == user) {
+                        emergencyUsers.push(childSnapshot.val());
+                    }
+                });
+
+                addAllItemsToModal(emergencyUsers);
+
+            } else {
+                console.log("No data available");
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+
+    }
+
+    // -------------------------------------Geolocation---------------------------------------------------
+
+    var coordinates = {lat: 0, long: 0};
+
+    const funcionInit = () => {
+        if (!"geolocation" in navigator) {
+            return alert("Tu navegador no soporta el acceso a la ubicación. Intenta con otro");
+        }
+
+        const onUbicacionConcedida = ubicacion => {
+            coordinates = {lat: ubicacion.coords.latitude, long: ubicacion.coords.longitude};
+        }
+    
+        const onErrorDeUbicacion = err => {
+            console.log("Error obteniendo ubicación: ", err);
+        }
+
+        const opcionesDeSolicitud = {
+            enableHighAccuracy: true, // Alta precisión
+            maximumAge: 0, // No queremos caché
+            timeout: 5000 // Esperar solo 5 segundos
+        };
+        // Solicitar
+        navigator.geolocation.getCurrentPosition(onUbicacionConcedida, onErrorDeUbicacion, opcionesDeSolicitud);
+
+    };
+
+    // ------------------------------------------map-------------------------------------------------------
+
+    function loadMap()
+    {
+        var map = L.map('map').setView([coordinates.lat, coordinates.long], 13);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+
+        L.marker([coordinates.lat, coordinates.long]).addTo(map)
+        .bindPopup(`<b>Lat:</b> ${coordinates.lat}, <b>Long:</b> ${coordinates.long}`)
+        .openPopup();
+
+        var circle = L.circle([coordinates.lat, coordinates.long], {
+            color: 'red',
+            fillColor: '#f03',
+            fillOpacity: 0.2,
+            radius: 300
+        }).addTo(map);
+    }
+
+    window.onload = getAllDataOnce(), funcionInit();
+    
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.1/umd/popper.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/notie"></script>
+</body>
+</html>
