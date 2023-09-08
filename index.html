@@ -10,9 +10,14 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 <link rel="stylesheet" type="text/css" href="https://unpkg.com/notie/dist/notie.min.css">
 <style>
+    body{
+        overflow-x: hidden;
+    }
+
     #map{
         height: 200px;
     }
+
 </style>
 <title>Panic Alert</title>
 </head>
@@ -20,16 +25,16 @@
 
     <h1 class="text-center display-4 my-4 text-danger"><i class="fas fa-exclamation-triangle"></i> Panic Alert</h1>
 
-    <div class="row">
-        <div class="col-md-6">
-            <div class="container">
-                <h4 class="text-center my-4 text-primary"><i class="fas fa-clipboard-list"></i> Registered Users</h4>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6">
+                <h4 class="text-center my-4 text-primary"><i class="fas fa-clipboard-list"></i> Usuarios Registrados</h4>
                 <table class="table table-striped">
                     <thead>
                         <tr class="text-center">
                             <th scope="col">#</th>
-                            <th scope="col">User</th>
-                            <th scope="col">Status</th>
+                            <th scope="col">Usuario</th>
+                            <th scope="col">Estado</th>
                             <!-- <th scope="col">Option</th> -->
                         </tr>
                     </thead>
@@ -38,38 +43,46 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-        <div class="col-md-6">
-            <h4 class="text-center my-4 text-warning"><i class="fas fa-exclamation-triangle"></i> Alert Users</h4>
-            <div class="container d-none" id="infoContainer">
-                <table class="table table-striped">
-                    <thead>
-                        <tr class="text-center">
-                            <th scope="col">Nombre</th>
-                            <th scope="col">Edad</th>
-                            <th scope="col">Enfermedad(es)</th>
-                            <th scope="col">Grupo Sanguíneo</th>
-                            <th scope="col">Número de Contacto</th>
-                        </tr>
-                    </thead>
-                    <tbody id="modalTable">
-                       
-                    </tbody>
-                </table>
-
-                <div class="container">
-                    <h2 class="mt-4 display-4 text-center">Coordenadas</h2>
-                    <div id="map"></div>
+            <div class="col-md-6">
+                <h4 class="text-center my-4 text-warning"><i class="fas fa-exclamation-triangle"></i> Usuarios en Alerta</h4>
+                <div class="d-none" id="infoContainer">
+                    <table class="table table-striped">
+                        <thead>
+                            <!-- <tr class="text-center">
+                                <th scope="col">Nombre</th>
+                                <th scope="col">Edad</th>
+                                <th scope="col">Enfermedad(es)</th>
+                                <th scope="col">Grupo Sanguíneo</th>
+                                <th scope="col">Número de Contacto</th>
+                            </tr> -->
+                            <tr class="text-center">
+                                <th scope="col">Dato</th>
+                                <th scope="col">Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modalTable">
+                           
+                        </tbody>
+                    </table>
+    
+                    <div class="container mb-4">
+                        <h2 class="mt-4 display-4 text-center">Coordenadas</h2>
+                        <div id="map"></div>
+                    </div>
                 </div>
-            </div>
-
-            <div class="container h-100" id="noAlertContainer">
-                <div class="d-flex justify-content-center align-items-center" style="width: 100%; height: 100%; border-radius: 50px; border: 5px solid var(--danger); border-style: dashed !important;">
-                    <h1 class="display-4 text-danger text-center">No hay alertas por el momento</h1>
+    
+                <div class="container h-100" id="noAlertContainer">
+                    <div class="d-flex justify-content-center align-items-center" style="width: 100%; height: 100%; border-radius: 50px; border: 5px solid var(--danger); border-style: dashed !important;">
+                        <h1 class="display-4 text-danger text-center">No hay alertas por el momento</h1>
+                    </div>
                 </div>
+    
             </div>
-
         </div>
+    </div>
+
+    <div class="position-absolute mr-4 mb-2" style="top: 0; right: 0;">
+        <small>&copy; Panic - V2</small>
     </div>
 
     <!-- Modal -->
@@ -238,28 +251,29 @@
 
     function addItemToModal(name, age, disease, bloodType, phone)
     {
-        let trow = document.createElement("tr");
-        trow.classList.add("text-center");
 
-        let tdName = document.createElement("td");
-        let tdAge = document.createElement("td");
-        let tdDisease = document.createElement("td");
-        let tdBloodType = document.createElement("td");
-        let tdPhone = document.createElement("td");
-
-        tdName.innerHTML = name;
-        tdAge.innerHTML = age;
-        tdDisease.innerHTML = disease;
-        tdBloodType.innerHTML = bloodType;
-        tdPhone.innerHTML = phone;
-
-        trow.appendChild(tdName);
-        trow.appendChild(tdAge);
-        trow.appendChild(tdDisease);
-        trow.appendChild(tdBloodType);
-        trow.appendChild(tdPhone);
-
-        modalTable.appendChild(trow);
+        modalTable.innerHTML += `
+            <tr>
+                <td class="text-right text-info"><b>Nombre</b></td>    
+                <td>${name}</td>    
+            </tr>
+            <tr>
+                <td class="text-right text-info"><b>Edad</b></td>    
+                <td>${age}</td>    
+            </tr>
+            <tr>
+                <td class="text-right text-info"><b>Enfermedad(es)</b></td>    
+                <td>${disease}</td>    
+            </tr>
+            <tr>
+                <td class="text-right text-info"><b>Grupo Sanguíneo</b></td>    
+                <td>${bloodType}</td>    
+            </tr>
+            <tr>
+                <td class="text-right text-info"><b>Número de contacto</b></td>    
+                <td><b>${phone}</b></td>    
+            </tr>
+        `;
     }
 
     function addAllItemsToModal(EmergencyUser)
@@ -360,13 +374,11 @@
         lat = position.coords.latitude;
         if(lat != null){
             document.write('<center><div class="alert alert-info" role="alert"> Please Turn On Your GPS </div></center>')
-        } 
+        }
     
     }
 
-    getLocationw();
-
-    window.onload = getAllDataOnce(), funcionInit();
+    window.onload = getLocationw(), getAllDataOnce(), funcionInit();
     
 </script>
 
